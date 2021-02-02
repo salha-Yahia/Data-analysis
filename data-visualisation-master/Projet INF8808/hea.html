@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+  }
+  rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+
+.row {
+  display: flex;
+}
+
+.row > .col {
+  flex: 1;
+}
+
+/***** Toggle buttons *****/
+.toggle-buttons {
+  display: flex;
+}
+
+.toggle-buttons > button {
+  flex: 0;
+  line-height: 30px;
+  color: #444;
+  background-color: #fafafa;
+  font-size: 11pt;
+  border: 1px solid #999;
+  border-right: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.toggle-buttons > button:last-child {
+  border-right: 1px solid #999;
+}
+
+.toggle-buttons > button.active {
+  color: #fff;
+  background-color: #4c7d95;
+}
+
+
+
+</style>
+<body>
+  <div class="row">
+    <div class="col">
+      <div class="toggle-buttons">
+        <button class="active">Femme</button>
+        <button>Homme</button>
+      </div>
+    </div>
+    <div class="col"></div>
+  <script type="text/javascript" src="assets/libs/d3.v3.js"></script>
+  <script type="text/javascript" src="assets/libs/d3-queue.v3.min.js"></script>
+  <script type="text/javascript" src="assets/libs/localization-fr.js"></script>
+   <h3>Taux de mortalité normalisés selon l'âge pour tous les cancers 1988-2017</h2>
+<div class="heatmap"></div>
+
+<script>
+  var itemSize = 25,
+      cellSize = itemSize - 1,
+      margin = {top: 120, right: 20, bottom: 20, left: 320};
+     
+  var width = 1200 - margin.right - margin.left,
+      height = 560 - margin.top - margin.bottom,  
+      gridSize = Math.floor(width / 24),
+          legendElementWidth = gridSize*2;
+  //var colors = ["#7dcebc","#138c72","#086d51","#114f31"];
+  //var colors = ["#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494"];
+  //var colors = ["#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"];
+  var colors = ["#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"]; 
+
+ d3.queue()
+    .defer(d3.csv, "./data/ASMRF.csv")
+    .defer(d3.csv, "./data/ASMRH.csv")
+    .awaitAll(function (error, response) {
+      if (error || response.length !== 2) {
+        throw error;
+      }
+      var currentYear = response[1];
+      var dataa = response[0];
+////////
+  
+
+    var data = dataa.map(function( item ) {
+        var newItem = {};
+        newItem.area = item.region;
+        newItem.year = item.annee;
+        newItem.value = item.ASMR;
+
+        return newItem;
+    })
+
+    var x_elements = d3.set(data.map(function( item ) { return item.year; } )).values(),
+        y_elements = d3.set(data.map(function( item ) { return item.area; } )).values();
+
+    var xScale = d3.scale.ordinal()
+        .domain(x_elements)
+        .rangeBands([0, x_elements.length * itemSize]);
+
+    var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .tickFormat(function (d) {
+            return d;
+        })
+        .orient("top");
+
+    var yScale = d3.scale.ordinal()
+        .domain(y_elements)
+        .rangeBands([0, y_elements.length * itemSize]);
+
+    var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left");
+  
+var colorScale = d3.scale.quantile()
+              .domain([140,400])
+              .range(colors);
+
+//var svg = d3.select("#chart").append("svg")
+    var svg = d3.select('.heatmap')
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var cells = svg.selectAll('rect')
+        .data(data)
+        .enter().append('g').append('rect')
+        .attr("class", "bordered")
+        .attr('width', cellSize)
+        .attr('height', cellSize)
+        .attr('y', function(d) { return yScale(d.area); })
+        .attr('x', function(d) { return xScale(d.year); })
+        .attr('fill', function(d) { return colorScale(d.value); });
+
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+        .selectAll('text')
+        .attr('font-weight', 'normal');
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .call(xAxis)
+        .selectAll('text')
+        .attr('font-weight', 'normal')
+        .style("text-anchor", "start")
+        .attr("dx", ".8em")
+        .attr("dy", ".5em")
+        .attr("transform", function (d) {
+            return "rotate(-65)";  
+        });
+         cells.append("title");
+         cells.select("title").text(function(d) { return d.value; });
+
+
+           var legend = svg.selectAll(".legend")
+              .data([0].concat(colorScale.quantiles()), function(d) { return d; })
+              .enter().append("g")
+              .attr("class", "legend");
+
+         legend.append("rect")
+            .attr("x", function(d, i) { return legendElementWidth * i; })
+            .attr("y", "300")
+            .attr("width", legendElementWidth)
+            .attr("height", gridSize / 2)
+            .style("fill", function(d, i) { return colors[i]; });
+
+          legend.append("text")
+            .attr("class", "mono")
+            .text(function(d) { return "≥ " + Math.round(d); })
+            .attr("x", function(d, i) { return legendElementWidth * i+20; })
+            .attr("y", 300 + gridSize);
+
+              var toggleButtons = d3.selectAll(".toggle-buttons > button");
+      toggleButtons.on("click", function(d, i) {
+          currentYear = d3.select(this).text();
+          dataa = response[i];
+          toggleButtons.classed("active", function() {
+            return currentYear === d3.select(this).text();
+          });
+
+var data = dataa.map(function( item ) {
+        var newItem = {};
+        newItem.area = item.region;
+        newItem.year = item.annee;
+        newItem.value = item.ASMR;
+
+        return newItem;
+    })
+     cells= svg.selectAll('rect')
+        .data(data)
+        .transition()
+        .duration(1000)
+        .attr('y', function(d) { return yScale(d.area); })
+        .attr('x', function(d) { return xScale(d.year); })
+        .attr('fill', function(d) { return colorScale(d.value); });
+         
+cells.select("title").text(function(d) { return d.value; });
+        
+        });
+
+
+        });
+
+</script>
+
+</body>
+</html>

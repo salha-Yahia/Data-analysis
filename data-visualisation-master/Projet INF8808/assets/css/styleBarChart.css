@@ -1,0 +1,46 @@
+.axis {
+  shape-rendering: crispEdges
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+.y.axis path {
+  fill: none;
+  stroke: black;
+  shape-rendering: crispEdges;
+}
+.line {
+  fill: none;
+}
+h1 {
+  font-size: 1em;
+  margin: 15px 0 20px 0;
+  text-align:center;
+}
+.label {
+  text-align: left;
+  line-height: 24px;
+  flex-basis: 150px;
+}
+.label,
+select {
+  padding: 5px;
+  font-family: Arial, sans-serif;  
+}
+/************BAR CHART*****************/
+.rectangle {
+  fill: rgba(39, 95, 188, 0.8);
+}
+.rectangle:hover {
+  fill: #e6a756;
+}
+/***************************************/
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}

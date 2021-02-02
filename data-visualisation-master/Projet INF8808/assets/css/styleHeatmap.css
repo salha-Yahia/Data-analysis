@@ -1,0 +1,48 @@
+.axis path,
+  .axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+  }
+
+  .axis text {
+      font-family: sans-serif;
+      font-size: 11px;
+  }
+  rect.bordered {
+        stroke: #E6E6E6;
+        stroke-width:2px;   
+      }
+.row {
+  display: flex;
+}
+
+.row > .col {
+  flex: 1;
+}
+
+/***** Toggle buttons *****/
+.toggle-buttons {
+  display: flex;
+}
+
+.toggle-buttons > button {
+  flex: 0;
+  line-height: 100px;
+  color: #444;
+  background-color: #fafafa;
+  font-size: 11pt;
+  border: 1px solid #999;
+  border-right: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.toggle-buttons > button:last-child {
+  border-right: 1px solid #999;
+}
+
+.toggle-buttons > button.active {
+  color: #fff;
+  background-color: #4c7d95;
+}
